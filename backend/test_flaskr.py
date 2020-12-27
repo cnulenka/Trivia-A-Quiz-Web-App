@@ -31,6 +31,14 @@ class TriviaTestCase(unittest.TestCase):
             "difficulty": "hard"
         }
 
+        self.test_quiz = {
+            'previous_questions':[],
+            'quiz_category':{
+                'type': "Science",
+                'id': 1
+                }
+        }
+
         # binds the app to the current context
         with self.app.app_context():
             self.db = SQLAlchemy()
@@ -137,7 +145,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['totalQuestions'], 0)
         self.assertEqual(len(data['questions']), 0)
 
+    def test_get_next_quiz_question(self):
+        res = self.client().post('/quizzes', json=self.test_quiz)
+        data = json.loads(res.data)
 
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question']['id'])
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

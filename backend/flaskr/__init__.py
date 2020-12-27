@@ -182,44 +182,44 @@ def create_app(test_config=None):
 
   @app.route('/quizzes', methods=['POST'])
   def get_next_quiz_question():
-  try:
-    body = request.get_json()
-    previous_questions = body.get('previous_questions', [])
-    quiz_category = body.get('quiz_category', None)
-    previous_question_dict = {}
-    category = Category.query.get(quiz_category['id'])
+    try:
+      body = request.get_json()
+      previous_questions = body.get('previous_questions', [])
+      quiz_category = body.get('quiz_category', None)
+      previous_question_dict = {}
+      category = Category.query.get(quiz_category['id'])
 
-    #create a hash table of previous qs ids
-    if(len(previous_questions) > 0):
-      for question in previous_questions:
-        if(previous_question_dict.get(question, None) == None):
-          previous_question_dict[question] = 1
+      #create a hash table of previous qs ids
+      if(len(previous_questions) > 0):
+        for question in previous_questions:
+          if(previous_question_dict.get(question, None) == None):
+            previous_question_dict[question] = 1
 
-    #collect all questions or by category if provided
-    all_questions = []
-    if(category != None):
-      all_questions = Question.query.filter(Question.category == category.id).all()
-    else:
-      all_questions = Question.query.all()
+      #collect all questions or by category if provided
+      all_questions = []
+      if(category != None):
+        all_questions = Question.query.filter(Question.category == category.id).all()
+      else:
+        all_questions = Question.query.all()
 
-    #filter out previous questions
-    unused_questions = []
-    for question in all_questions:
-      if (previous_question_dict.get(question.id, None) == None):
-        unused_questions.append(question)
-    #randomly chose a new question from unused questions
-    current_question = None
-    if(len(unused_questions) > 0):
-      random_question = random.choice(unused_questions)
-      current_question = random_question.format()
+      #filter out previous questions
+      unused_questions = []
+      for question in all_questions:
+        if (previous_question_dict.get(question.id, None) == None):
+          unused_questions.append(question)
+      #randomly chose a new question from unused questions
+      current_question = None
+      if(len(unused_questions) > 0):
+        random_question = random.choice(unused_questions)
+        current_question = random_question.format()
 
-    return jsonify({
-        'success': True,
-        'question': current_question
-      })
+      return jsonify({
+          'success': True,
+          'question': current_question
+        })
 
-  except:
-    abort(500)
+    except:
+      abort(500)
 
 
   '''
