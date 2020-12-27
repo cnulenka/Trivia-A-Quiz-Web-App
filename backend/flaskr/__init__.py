@@ -37,7 +37,7 @@ def create_app(test_config=None):
   @app.route('/categories', methods=['GET'])
   def get_categories():
     categories = Category.query.order_by(Category.id).all()
-    formatted_categories = [category.format() for category in categories]
+    formatted_categories = {category.id: category.type for category in categories}
 
     return jsonify({
       'success': True,
@@ -63,7 +63,7 @@ def create_app(test_config=None):
     current_questions = get_questions_for_page(page, all_questions)
     current_category = request.args.get('currentCategory', None)
     categories = Category.query.order_by(Category.id).all()
-    formatted_categories = [category.format() for category in categories]
+    formatted_categories = {category.id: category.type for category in categories}
 
     if len(current_questions) == 0:
       abort(404)
@@ -125,7 +125,7 @@ def create_app(test_config=None):
     answer = body.get('answer', "")
     category = body.get('category', 0)
     difficulty = body.get('difficulty', 0)
-    search = body.get('search', None)
+    search = body.get('searchTerm', None)
     try:
       if search:
         search_results = Question.query.order_by(Question.id).filter(Question.question.ilike('%{}%'.format(search))).all()
@@ -185,8 +185,9 @@ def create_app(test_config=None):
   def get_next_quiz_question():
     body = request.get_json()
     previous_questions = body.get('previous_questions', [])
-    quiz_category = body.get('quiz_category', 0)
+    quiz_category = body.get('quiz_category', None)
     previous_question_dict = {}
+    category = Category.query.get(quiz_category['id'])
 
     #create a hash table of previous qs ids
     if(len(previous_questions) > 0):
@@ -195,29 +196,30 @@ def create_app(test_config=None):
           previous_question_dict[question] = 1
 
     #collect all questions or by category if provided
+    print(quiz_category)
     all_questions = []
-    if(quiz_category > 0):
-      all_questions = Question.query.filter(Question.category == quiz_category)
+    if(category != None):
+      all_questions = Question.query.filter(Question.category == category.id).all()
     else:
       all_questions = Question.query.all()
 
+    print(all_questions)
     #filter out previous questions
     unused_questions = []
     for question in all_questions:
       if (previous_question_dict.get(question.id, None) == None):
         unused_questions.append(question)
-
+    print(unused_questions)
     #randomly chose a new question from unused questions
     current_question = None
     if(len(unused_questions) > 0):
       random_question = random.choice(unused_questions)
       current_question = random_question.format()
-      previous_questions.append(current_question.id)
 
-
+    print(current_question)
     return jsonify({
-        'previousQuestions': previous_questions,
-          'currentQuestion': current_question
+        'success': True,
+        'question': current_question
       }) 
 
 
@@ -226,7 +228,7 @@ def create_app(test_config=None):
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
-    @app.errorhandler(404)
+  @app.errorhandler(404)
   def not_found(error):
     return jsonify({
       "success": False, 
