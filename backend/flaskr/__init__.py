@@ -76,7 +76,6 @@ def create_app(test_config=None):
       'categories': formatted_categories
       })
 
-
   '''
   @TODO: 
   Create an endpoint to DELETE question using a question ID. 
@@ -106,6 +105,36 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route('/questions', methods=['POST'])
+  def create_or_search_question():
+    body = request.get_json()
+    question = body.get('question', "")
+    answer = body.get('answer', "")
+    category = body.get('category', 0)
+    difficulty = body.get('difficulty', 0)
+    search = body.get('search', None)
+    try:
+      if search:
+        search_results = Question.query.order_by(Question.id).filter(Question.question.ilike('%{}%'.format(search))).all()
+        print(search_results)
+        page = request.args.get('page', 1, type=int)
+        current_search_results = get_questions_for_page(page, search_results)
+        print(current_search_results)
+        return jsonify({
+          'success': True,
+          'totalQuestions': len(current_search_results),
+          'questions': current_search_results,
+          'currentCategory': None
+          })
+      else:
+        new_question = Question(question, answer, category, difficulty)
+        new_question.insert()
+
+        return jsonify({
+          'success': True
+          })
+    except:
+      abort(422)
 
   '''
   @TODO: 
