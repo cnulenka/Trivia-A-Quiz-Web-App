@@ -182,6 +182,7 @@ def create_app(test_config=None):
 
   @app.route('/quizzes', methods=['POST'])
   def get_next_quiz_question():
+  try:
     body = request.get_json()
     previous_questions = body.get('previous_questions', [])
     quiz_category = body.get('quiz_category', None)
@@ -215,7 +216,10 @@ def create_app(test_config=None):
     return jsonify({
         'success': True,
         'question': current_question
-      }) 
+      })
+
+  except:
+    abort(500)
 
 
   '''
@@ -238,6 +242,14 @@ def create_app(test_config=None):
       "error": 422,
       "message": "unprocessable"
       }), 422
+
+  @app.errorhandler(500)
+  def server_error(error):
+    return jsonify({
+      "success": False, 
+      "error": 500,
+      "message": "server error"
+      }), 500
 
   return app
 
