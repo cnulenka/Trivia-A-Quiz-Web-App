@@ -129,10 +129,8 @@ def create_app(test_config=None):
     try:
       if search:
         search_results = Question.query.order_by(Question.id).filter(Question.question.ilike('%{}%'.format(search))).all()
-        print(search_results)
         page = request.args.get('page', 1, type=int)
         current_search_results = get_questions_for_page(page, search_results)
-        print(current_search_results)
         return jsonify({
           'success': True,
           'totalQuestions': len(current_search_results),
@@ -197,27 +195,23 @@ def create_app(test_config=None):
           previous_question_dict[question] = 1
 
     #collect all questions or by category if provided
-    print(quiz_category)
     all_questions = []
     if(category != None):
       all_questions = Question.query.filter(Question.category == category.id).all()
     else:
       all_questions = Question.query.all()
 
-    print(all_questions)
     #filter out previous questions
     unused_questions = []
     for question in all_questions:
       if (previous_question_dict.get(question.id, None) == None):
         unused_questions.append(question)
-    print(unused_questions)
     #randomly chose a new question from unused questions
     current_question = None
     if(len(unused_questions) > 0):
       random_question = random.choice(unused_questions)
       current_question = random_question.format()
 
-    print(current_question)
     return jsonify({
         'success': True,
         'question': current_question
