@@ -144,7 +144,8 @@ def create_app(test_config=None):
         new_question.insert()
 
         return jsonify({
-          'success': True
+          'success': True,
+          'newQuestionId': new_question.id
           })
     except:
       abort(422)

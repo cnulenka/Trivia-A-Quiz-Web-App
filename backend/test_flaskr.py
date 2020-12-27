@@ -17,6 +17,19 @@ class TriviaTestCase(unittest.TestCase):
         self.database_name = "trivia_test_db"
         self.database_path = "postgres://postgres:postgres@{}/{}".format('localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
+        self.test_question_success = {
+            'question': 'Am I a test subect?',
+            'answer': 'yes',
+            'category': '1',
+            'difficulty': 1
+        }
+        #invalid input as values are of wrong data type
+        self.test_question_fail = {
+            "question": 1,
+            "answer": 1,
+            "category": 1,
+            "difficulty": "hard"
+        }
 
         # binds the app to the current context
         with self.app.app_context():
@@ -50,6 +63,52 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'resource not found')
+
+    def test_get_categories(self):
+        res = self.client().get('/categories')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(len(data['categories']))
+
+    def test_create_and_delete_question(self):
+        #dummy data is created and deleted to test both apis
+
+        #test creation api
+        creation_res = self.client().post('questions', json=self.test_question_success)
+        creation_data = json.loads(creation_res.data)
+        self.assertEqual(creation_res.status_code, 200)
+        self.assertEqual(creation_data['success'], True)
+        self.assertTrue(creation_data['newQuestionId'])
+        created_question_id = creation_data['newQuestionId']
+        created_question = Question.query.filter(Question.id == created_question_id).one_or_none()
+        self.assertTrue(created_question.id)
+
+        #test deletion api
+        deletion_res = self.client().delete('questions/{}'.format(created_question_id))
+        deletion_data = json.loads(deletion_res.data)
+
+        deleted_question = Question.query.filter(Question.id == created_question_id).one_or_none()
+        self.assertEqual(deletion_res.status_code, 200)
+        self.assertEqual(deletion_data['success'], True)
+        self.assertEqual(deleted_question, None)
+
+    def test_422_if_question_to_delete_does_not_exist(self):
+        res = self.client().delete('/questions/1000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unprocessable')
+
+    def test_422_if_book_creation_fails(self):
+        res = self.client().post('/questions', json=self.test_question_fail)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'unprocessable')
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
