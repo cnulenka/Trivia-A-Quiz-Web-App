@@ -181,6 +181,46 @@ def create_app(test_config=None):
   and shown whether they were correct or not. 
   '''
 
+  @app.route('/quizzes', methods=['POST'])
+  def get_next_quiz_question():
+    body = request.get_json()
+    previous_questions = body.get('previous_questions', [])
+    quiz_category = body.get('quiz_category', 0)
+    previous_question_dict = {}
+
+    #create a hash table of previous qs ids
+    if(len(previous_questions) > 0):
+      for question in previous_questions:
+        if(previous_question_dict.get(question, None) == None):
+          previous_question_dict[question] = 1
+
+    #collect all questions or by category if provided
+    all_questions = []
+    if(quiz_category > 0):
+      all_questions = Question.query.filter(Question.category == quiz_category)
+    else:
+      all_questions = Question.query.all()
+
+    #filter out previous questions
+    unused_questions = []
+    for question in all_questions:
+      if (previous_question_dict.get(question.id, None) == None):
+        unused_questions.append(question)
+
+    #randomly chose a new question from unused questions
+    current_question = None
+    if(len(unused_questions) > 0):
+      random_question = random.choice(unused_questions)
+      current_question = random_question.format()
+      previous_questions.append(current_question.id)
+
+
+    return jsonify({
+        'previousQuestions': previous_questions,
+          'currentQuestion': current_question
+      }) 
+
+
   '''
   @TODO: 
   Create error handlers for all expected errors 
