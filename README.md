@@ -14,7 +14,7 @@ This is a fun quiz game where people can test their knowledge on fields of Scien
 ### Pre-requisites and Local Development 
 Developers using this project should already have Python3.7, pip and node installed on their local machines.
 
-#### Frontend Dependencies
+### Frontend Dependencies
 
 #### Installing Node and NPM
 
@@ -28,7 +28,7 @@ This project uses NPM to manage software dependencies. NPM Relies on the package
 npm install
 ```
 
-## Running Your Frontend in Dev Mode
+#### Running Your Frontend in Dev Mode
 
 The frontend app is built using create-react-app. In order to run the app in development mode use ```npm start```. You can change the script in the ```package.json``` file. 
 
@@ -38,7 +38,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser. T
 npm start
 ```
 
-#### Backend Dependencies
+### Backend Dependencies
 
 Once you have your virtual environment setup and running, install dependencies by naviging to the `/backend` directory and running:
 
@@ -56,13 +56,13 @@ This will install all of the required packages we selected within the `requireme
 
 - [Flask-CORS](https://flask-cors.readthedocs.io/en/latest/#) is the extension we'll use to handle cross origin requests from our frontend server. 
 
-## Database Setup
+#### Database Setup
 With Postgres running, restore a database using the trivia.psql file provided. From the backend folder in terminal run:
 ```bash
 psql trivia < trivia.psql
 ```
 
-## Running the server
+#### Running the server
 
 From within the `backend` directory first ensure you are working using your created virtual environment.
 
@@ -77,7 +77,7 @@ flask run
 Setting the `FLASK_ENV` variable to `development` will detect file changes and restart the server automatically.
 
 Setting the `FLASK_APP` variable to `flaskr` directs flask to use the `flaskr` directory and the `__init__.py` file to find the application. 
-
+The application runs on `http://127.0.0.1:5000/` by default and is a proxy in the frontend configuration. 
 
 ## Testing
 To run the tests, run
